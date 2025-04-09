@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contractor Compensation Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            font-size: 16px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-size: 1rem;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            resize: vertical;
+            font-size: 1rem;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            display: none;
+            font-size: 1rem;
+        }
+        .eligible {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .not-eligible {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .language-toggle {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        select {
+            padding: 5px;
+            font-size: 1rem;
+        }
+        @media (max-width: 600px) {
+            body {
+                margin: 10px;
+                padding: 10px;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            label {
+                font-size: 0.9rem;
+            }
+            input[type="number"] {
+                width: 80px;
+                font-size: 0.9rem;
+            }
+            textarea {
+                font-size: 0.9rem;
+            }
+            button {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            #result {
+                font-size: 0.9rem;
+            }
+            select {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="language-toggle">
+        <label for="language">Language / Idioma:</label>
+        <select id="language" onchange="changeLanguage()">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+        </select>
+    </div>
+
+    <h1 data-translate="title">Contractor Compensation Calculator</h1>
+    <form id="calcForm" onsubmit="calculateCompensation(event)">
+        <label for="windows" data-translate="windowsLabel">Number of Windows Installed:</label>
+        <input type="number" id="windows" min="0" value="0" required>
+
+        <label for="doors" data-translate="doorsLabel">Number of Doors Installed:</label>
+        <input type="number" id="doors" min="0" value="0" required>
+
+        <label for="secondFloor" data-translate="secondFloorLabel">Number of Windows on Second Floor or Higher:</label>
+        <input type="number" id="secondFloor" min="0" value="0" required>
+
+        <label for="trimming" data-translate="trimmingLabel">Number of Windows or Doors Requiring Trimming:</label>
+        <input type="number" id="trimming" min="0" value="0" required>
+
+        <label for="concrete" data-translate="concreteLabel">Number of Doors Requiring Concrete Build-Outs:</label>
+        <input type="number" id="concrete" min="0" value="0" required>
+
+        <label for="nailFin" data-translate="nailFinLabel">Number of Nail Fin Windows:</label>
+        <input type="number" id="nailFin" min="0" value="0" required>
+
+        <label for="amountPaid" data-translate="amountPaidLabel">Project Dollar Amount Paid ($):</label>
+        <input type="number" id="amountPaid" min="0" step="0.01" value="0" required>
+
+        <label for="daysCompleted" data-translate="daysCompletedLabel">Number of Days to Complete the Project:</label>
+        <input type="number" id="daysCompleted" min="0" max="999999" step="0.01" value="0" required>
+
+        <label for="additionalInfo" data-translate="additionalInfoLabel">Additional Information:</label>
+        <textarea id="additionalInfo" data-translate="additionalInfoPlaceholder" placeholder="Enter any additional details here..."></textarea>
+
+        <button type="submit" data-translate="calculateButton">Calculate Eligibility</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        const translations = {
+            en: {
+                title: "Contractor Compensation Calculator",
+                windowsLabel: "Number of Windows Installed:",
+                doorsLabel: "Number of Doors Installed:",
+                secondFloorLabel: "Number of Windows on Second Floor or Higher:",
+                trimmingLabel: "Number of Windows or Doors Requiring Trimming:",
+                concreteLabel: "Number of Doors Requiring Concrete Build-Outs:",
+                nailFinLabel: "Number of Nail Fin Windows:",
+                amountPaidLabel: "Project Dollar Amount Paid ($):",
+                daysCompletedLabel: "Number of Days to Complete the Project:",
+                additionalInfoLabel: "Additional Information:",
+                additionalInfoPlaceholder: "Enter any additional details here...",
+                calculateButton: "Calculate Eligibility",
+                estimatedRevenuePerDay: "Estimated Revenue Per Day Based on Your Input: $",
+                calculatedDuration: "Calculated Duration:",
+                daysCompleted: "Days Completed:",
+                eligibleMessage: "You may qualify for extra compensation. Please submit all supporting documents (photos, receipts, material invoices) to the office for review.",
+                estimatedCompensation: "Estimated Compensation Based on Your Input: $",
+                notEligibleMessage: "Based on the inputs, you do not qualify for additional labor compensation.",
+                additionalInfoResult: "Additional Information:",
+                hour: "hour",
+                hours: "hours",
+                day: "day",
+                days: "days",
+                na: "N/A (Days Completed cannot be 0)"
+            },
+            es: {
+                title: "Calculadora de Compensación para Contratistas",
+                windowsLabel: "Número de Ventanas Instaladas:",
+                doorsLabel: "Número de Puertas Instaladas:",
+                secondFloorLabel: "Número de Ventanas en el Segundo Piso o Superior:",
+                trimmingLabel: "Número de Ventanas o Puertas que Requieren Recorte:",
+                concreteLabel: "Número de Puertas que Requieren Construcción de Concreto:",
+                nailFinLabel: "Número de Ventanas con Aleta de Clavo:",
+                amountPaidLabel: "Monto en Dólares Pagado por el Proyecto ($):",
+                daysCompletedLabel: "Número de Días para Completar el Proyecto:",
+                additionalInfoLabel: "Información Adicional:",
+                additionalInfoPlaceholder: "Ingresa cualquier detalle adicional aquí...",
+                calculateButton: "Calcular Elegibilidad",
+                estimatedRevenuePerDay: "Ingreso Estimado por Día Basado en Tus Datos: $",
+                calculatedDuration: "Duración Calculada:",
+                daysCompleted: "Días Completados:",
+                eligibleMessage: "Puedes calificar para una compensación adicional. Por favor, envía todos los documentos de soporte (fotos, recibos, facturas de materiales) a la oficina para su revisión.",
+                estimatedCompensation: "Compensación Estimada Basada en Tus Datos: $",
+                notEligibleMessage: "Basado en los datos ingresados, no calificas para una compensación laboral adicional.",
+                additionalInfoResult: "Información Adicional:",
+                hour: "hora",
+                hours: "horas",
+                day: "día",
+                days: "días",
+                na: "N/A (Los Días Completados no pueden ser 0)"
+            }
+        };
+
+        function changeLanguage() {
+            const lang = document.getElementById('language').value;
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (key.endsWith('Placeholder')) {
+                    element.placeholder = translations[lang][key];
+                } else {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            localStorage.setItem('language', lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('language') || 'en';
+            document.getElementById('language').value = savedLang;
+            changeLanguage();
+        });
+
+        function formatDaysAndHours(decimalDays) {
+            const lang = document.getElementById('language').value;
+            const totalHours = decimalDays * 8;
+            const days = Math.floor(totalHours / 8);
+            const hours = Math.round(totalHours % 8);
+            if (days === 0 && hours > 0) {
+                return `${hours} ${translations[lang][hours === 1 ? 'hour' : 'hours']}`;
+            } else if (days > 0 && hours === 0) {
+                return `${days} ${translations[lang][days === 1 ? 'day' : 'days']}`;
+            } else if (days > 0 && hours > 0) {
+                return `${days} ${translations[lang][days === 1 ? 'day' : 'days']} and ${hours} ${translations[lang][hours === 1 ? 'hour' : 'hours']}`;
+            } else {
+                return `0 ${translations[lang]['hours']}`;
+            }
+        }
+
+        function calculateCompensation(event) {
+            event.preventDefault();
+
+            const lang = document.getElementById('language').value;
+
+            // Get input values
+            const windows = parseInt(document.getElementById('windows').value) || 0;
+            const doors = parseInt(document.getElementById('doors').value) || 0;
+            const secondFloor = parseInt(document.getElementById('secondFloor').value) || 0;
+            const trimming = parseInt(document.getElementById('trimming').value) || 0;
+            const concrete = parseInt(document.getElementById('concrete').value) || 0;
+            const nailFin = parseInt(document.getElementById('nailFin').value) || 0;
+            const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+            const daysCompleted = parseFloat(document.getElementById('daysCompleted').value) || 0;
+            const additionalInfo = document.getElementById('additionalInfo').value;
+
+            // Calculate total labor hours
+            const totalHours = (windows * 1) + (doors * 8) + (secondFloor * 1) +
+                              (trimming * 0.5) + (concrete * 2) + (nailFin * 1);
+
+            // Calculate duration in days
+            const calculatedDuration = totalHours / 8;
+
+            // Calculate breakeven days (not displayed)
+            const breakevenDays = amountPaid / 480;
+
+            // Calculate estimated revenue per day
+            const estimatedRevenuePerDay = daysCompleted > 0 ? (amountPaid / daysCompleted) : 'N/A';
+            const formattedEstimatedRevenue = daysCompleted > 0 ? estimatedRevenuePerDay.toFixed(2) : translations[lang].na;
+
+            // Format durations in days and hours
+            const formattedCalculatedDuration = formatDaysAndHours(calculatedDuration);
+            const formattedDaysCompleted = formatDaysAndHours(daysCompleted);
+
+            // Determine eligibility based on days completed
+            const resultDiv = document.getElementById('result');
+            let message, className;
+
+            // Start with estimated revenue per day at the top
+            message = `${translations[lang].estimatedRevenuePerDay}${formattedEstimatedRevenue}<br>`;
+
+            if (breakevenDays < daysCompleted) {
+                const estimatedCompensation = (480 * daysCompleted) - amountPaid;
+                message += `${translations[lang].calculatedDuration} ${formattedCalculatedDuration}<br>` +
+                          `${translations[lang].daysCompleted} ${formattedDaysCompleted}<br>` +
+                          `<strong>${translations[lang].eligibleMessage}</strong><br>` +
+                          `${translations[lang].estimatedCompensation}${estimatedCompensation.toFixed(2)}`;
+                className = 'eligible';
+            } else {
+                message += `${translations[lang].calculatedDuration} ${formattedCalculatedDuration}<br>` +
+                          `${translations[lang].daysCompleted} ${formattedDaysCompleted}<br>` +
+                          `<strong>${translations[lang].notEligibleMessage}</strong>`;
+                className = 'not-eligible';
+            }
+
+            // Add additional information if provided
+            if (additionalInfo.trim() !== '') {
+                message += `<br><br><strong>${translations[lang].additionalInfoResult}</strong><br>${additionalInfo}`;
+            }
+
+            // Display result
+            resultDiv.innerHTML = message;
+            resultDiv.className = className;
+            resultDiv.style.display = 'block';
+        }
+
+        // Clear default value on focus for number inputs
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('focus', function() {
+                if (this.value === '0') {
+                    this.value = '';
+                }
+            });
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = '0';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
